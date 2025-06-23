@@ -3,14 +3,21 @@
 // Garante que o script só roda depois que o HTML estiver totalmente carregado
 document.addEventListener('DOMContentLoaded', () => {
 
+    let reportForm, successMessage, errorMessage, errorList, submitAnotherBtn, protocolDisplay;
+
     // ==================================================
     // PARTE 1: ROLAGEM SUAVE PARA O MENU DE NAVEGAÇÃO
     // ==================================================
     const navLinks = document.querySelectorAll('header nav a[href^="#"]');
     navLinks.forEach(link => {
+        // Se o link é apenas "#" ou é o botão que abre o modal, pule a lógica de smooth scroll
+        if (link.getAttribute('href') === '#' || link.id === 'open-modal-btn') {
+            return; // Pula para o próximo link no loop
+        }
+
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const targetId = this.getAttribute('href');
+            const targetId = this.getAttribute('href'); // Deve ser algo como "#sobre-nos"
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -166,35 +173,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================================================
     // Get references to HTML elements
     // Ajuste o ID do modal no HTML de 'report-modal' para 'reportModal'
-    const reportModal = document.getElementById('reportModal'); // Garanta que este ID está no HTML
-    const openReportModalBtn = document.getElementById('open-modal-btn');
-    // Ajuste o ID do botão de fechar modal no HTML de class="close-button" para id="closeReportModal"
-    const closeReportModalBtn = document.getElementById('closeReportModal');
-    // Ajuste o ID do formulário no HTML de 'report-form' para 'reportForm'
-    const reportForm = document.getElementById('reportForm');
-    
-    const successMessage = document.getElementById('successMessage');
-    const errorMessage = document.getElementById('errorMessage');
-    const protocolDisplay = document.getElementById('protocolDisplay');
-    const errorList = document.getElementById('errorList');
-    const submitAnotherBtn = document.getElementById('submitAnother');
+    const modal = document.getElementById('report-modal');
+    // Adicionado 'if' para evitar erros se o modal não estiver no HTML
+    if (modal) {
+    const openModalBtn = document.getElementById('open-modal-btn');
+    const closeModalBtn = modal.querySelector('.close-button');
 
-    // --- Modal Control Logic ---
-    if (reportModal && openReportModalBtn && closeReportModalBtn) { // Verifica se os elementos existem
-        openReportModalBtn.addEventListener('click', (event) => {
-            event.preventDefault();
-            reportModal.classList.remove('hidden'); // Mostra o modal (presume que hidden esconde)
-            successMessage.classList.add('hidden');
-            errorMessage.classList.add('hidden');
-            reportForm.reset(); // Limpa o formulário
-            // Limpa mensagens de erro específicas por campo
-            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
-            reportForm.classList.remove('hidden'); // Garante que o form esteja visível
-        });
+    if(openModalBtn && closeModalBtn) {
+        reportForm = document.getElementById('report-form');
+        successMessage = document.getElementById('success-message');
+        errorMessage = document.getElementById('error-message');
+        errorList = document.getElementById('error-list');
+        submitAnotherBtn = document.getElementById('submit-another-btn');
+        protocolDisplay = document.getElementById('protocol-display');
 
-        closeReportModalBtn.addEventListener('click', () => {
-            reportModal.classList.add('hidden'); // Esconde o modal
-        });
+            const openModal = () => {
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            };
+
+            openModalBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal();
+            });
+            
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+            reportForm = document.getElementById('report-form');
+            reportForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Denúncia enviada com sucesso! (Isso é um teste, nenhum dado foi enviado).');
+                closeModal();
+                reportForm.reset();
+            });
+        }
     }
 
 
@@ -204,22 +230,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para buscar o token CSRF do Laravel API
     async function fetchCsrfToken() {
         try {
-            // VERIFIQUE A URL DO SEU BACKEND LARAVEL PARA O ENDPOINT CSRF
-            // Se a rota está em backend/routes/api.php, a URL é /api/csrf-token
-            // Se está em backend/routes/web.php sem prefixo, a URL é /csrf-token
-            const response = await fetch('http://127.0.0.1:8000/api/csrf-token'); // Exemplo: Laravel serve /api/csrf-token
+            // Verifica se o token já está armazenado no localStorage
+            let storedToken = localStorage.getItem('csrf_token');
+            if (storedToken) {
+                csrfToken = storedToken; // Usa o token armazenado
+                console.log('CSRF Token loaded from localStorage:', csrfToken);
+                return;
+            }
+
+            // Se o token não estiver no localStorage, faz a requisição
+            const response = await fetch('http://127.0.0.1:8000/api/csrf-token');
             const data = await response.json();
             csrfToken = data.csrf_token;
-            console.log('CSRF Token fetched:', csrfToken);
+
+            // Armazena o token no localStorage para reutilizar em futuras requisições
+            localStorage.setItem('csrf_token', csrfToken);
+            console.log('CSRF Token fetched and saved:', csrfToken);
         } catch (error) {
             console.error('Failed to fetch CSRF token:', error);
             alert('Não foi possível inicializar a aplicação. Por favor, recarregue a página.');
         }
     }
 
-    // Chame a função para buscar o token CSRF quando a página carregar
+    // Função para buscar o token CSRF quando a página carregar
     fetchCsrfToken();
-
 
     if (reportForm) { // Verifica se o formulário existe
         reportForm.addEventListener('submit', async function(event) {
