@@ -1,8 +1,11 @@
+// frontend/script.js
+
+// Garante que o script só roda depois que o HTML estiver totalmente carregado
 document.addEventListener('DOMContentLoaded', () => {
 
-    //==================================================
+    // ==================================================
     // PARTE 1: ROLAGEM SUAVE PARA O MENU DE NAVEGAÇÃO
-    //==================================================
+    // ==================================================
     const navLinks = document.querySelectorAll('header nav a[href^="#"]');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -15,9 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    //================================================================
+    // ================================================================
     // PARTE 2: CARROSSEL DE CARDS (COM AUTO-SCROLL E INÉRCIA)
-    //================================================================
+    // ================================================================
     const cardCarousel = document.querySelector('.carousel-wrapper');
     if (cardCarousel) {
         const cardGrid = cardCarousel.querySelector('.card-grid');
@@ -94,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const prevScrollLeft = cardCarousel.scrollLeft;
             cardCarousel.scrollLeft = scrollLeft - walk;
-            // Calcula a velocidade do movimento em tempo real para usar na inércia
             velocityX = cardCarousel.scrollLeft - prevScrollLeft;
         });
 
@@ -105,27 +107,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- LÓGICA DE INÉRCIA (DESACELERAÇÃO SUAVE) ---
             function momentumLoop() {
-                cardCarousel.scrollLeft += velocityX; // Aplica o movimento
-                velocityX *= 0.95; // Aplica atrito (fricção) para desacelerar
+                cardCarousel.scrollLeft += velocityX;
+                velocityX *= 0.95;
 
-                // Lógica de loop infinito durante a inércia
                 if (cardCarousel.scrollLeft >= originalWidth) {
                     cardCarousel.scrollLeft -= originalWidth;
                 } else if (cardCarousel.scrollLeft <= 0) {
                     cardCarousel.scrollLeft += originalWidth;
                 }
                 
-                // Continua a animação se ainda houver velocidade
                 if (Math.abs(velocityX) > 0.5) {
                     momentumId = requestAnimationFrame(momentumLoop);
                 } else {
-                    // Quando parar, retoma o auto-scroll se o mouse não estiver em cima
                     if (!cardCarousel.matches(':hover')) {
                         startAutoScroll();
                     }
                 }
             }
-            // Inicia a animação de inércia ao soltar o mouse
             momentumId = requestAnimationFrame(momentumLoop);
         };
         
@@ -138,13 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    //==================================================
+    // ==================================================
     // PARTE 3: FUNCIONALIDADE DO CARROSSEL "SOBRE NÓS"
-    //==================================================
+    // ==================================================
     const aboutSlidesContainer = document.querySelector('.about-slides');
     const navDots = document.querySelectorAll('.nav-dot');
     if (aboutSlidesContainer && navDots.length > 0) {
-        // ... (código da Parte 3 permanece o mesmo) ...
         const updateActiveDot = (activeIndex) => {
             navDots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === activeIndex);
@@ -164,46 +161,145 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    //==================================================
-    // PARTE 5: CONTROLE DO MODAL DE DENÚNCIA
-    //==================================================
-    const modal = document.getElementById('report-modal');
-    // Adicionado 'if' para evitar erros se o modal não estiver no HTML
-    if (modal) {
-        const openModalBtn = document.getElementById('open-modal-btn');
-        const closeModalBtn = modal.querySelector('.close-button');
+    // ==================================================
+    // PARTE 4: CONTROLE DO MODAL DE DENÚNCIA E SUBMISSÃO DE FORMULÁRIO (API)
+    // ==================================================
+    // Get references to HTML elements
+    // Ajuste o ID do modal no HTML de 'report-modal' para 'reportModal'
+    const reportModal = document.getElementById('reportModal'); // Garanta que este ID está no HTML
+    const openReportModalBtn = document.getElementById('open-modal-btn');
+    // Ajuste o ID do botão de fechar modal no HTML de class="close-button" para id="closeReportModal"
+    const closeReportModalBtn = document.getElementById('closeReportModal');
+    // Ajuste o ID do formulário no HTML de 'report-form' para 'reportForm'
+    const reportForm = document.getElementById('reportForm');
+    
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const protocolDisplay = document.getElementById('protocolDisplay');
+    const errorList = document.getElementById('errorList');
+    const submitAnotherBtn = document.getElementById('submitAnother');
 
-        if(openModalBtn && closeModalBtn) {
-            const openModal = () => {
-                modal.classList.add('show');
-                document.body.classList.add('modal-open');
-            };
-            const closeModal = () => {
-                modal.classList.remove('show');
-                document.body.classList.remove('modal-open');
-            };
-            openModalBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openModal();
-            });
-            closeModalBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('show')) {
-                    closeModal();
-                }
-            });
-            const reportForm = document.getElementById('report-form');
-            reportForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                alert('Denúncia enviada com sucesso! (Isso é um teste, nenhum dado foi enviado).');
-                closeModal();
-                reportForm.reset();
-            });
+    // --- Modal Control Logic ---
+    if (reportModal && openReportModalBtn && closeReportModalBtn) { // Verifica se os elementos existem
+        openReportModalBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            reportModal.classList.remove('hidden'); // Mostra o modal (presume que hidden esconde)
+            successMessage.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            reportForm.reset(); // Limpa o formulário
+            // Limpa mensagens de erro específicas por campo
+            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+            reportForm.classList.remove('hidden'); // Garante que o form esteja visível
+        });
+
+        closeReportModalBtn.addEventListener('click', () => {
+            reportModal.classList.add('hidden'); // Esconde o modal
+        });
+    }
+
+
+    // --- Form Submission Logic ---
+    let csrfToken = null; // Variável para armazenar o token CSRF
+
+    // Função para buscar o token CSRF do Laravel API
+    async function fetchCsrfToken() {
+        try {
+            // VERIFIQUE A URL DO SEU BACKEND LARAVEL PARA O ENDPOINT CSRF
+            // Se a rota está em backend/routes/api.php, a URL é /api/csrf-token
+            // Se está em backend/routes/web.php sem prefixo, a URL é /csrf-token
+            const response = await fetch('http://127.0.0.1:8000/api/csrf-token'); // Exemplo: Laravel serve /api/csrf-token
+            const data = await response.json();
+            csrfToken = data.csrf_token;
+            console.log('CSRF Token fetched:', csrfToken);
+        } catch (error) {
+            console.error('Failed to fetch CSRF token:', error);
+            alert('Não foi possível inicializar a aplicação. Por favor, recarregue a página.');
         }
+    }
+
+    // Chame a função para buscar o token CSRF quando a página carregar
+    fetchCsrfToken();
+
+
+    if (reportForm) { // Verifica se o formulário existe
+        reportForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Limpa mensagens anteriores
+            errorMessage.classList.add('hidden');
+            errorList.innerHTML = '';
+            successMessage.classList.add('hidden');
+            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+
+            if (!csrfToken) {
+                alert('Token CSRF não disponível. Por favor, tente novamente ou recarregue a página.');
+                return;
+            }
+
+            const formData = new FormData(this);
+            // NÃO adicione _token ao formData se você for enviar no cabeçalho X-CSRF-TOKEN
+            // formData.append('_token', csrfToken); // Este é para formulários tradicionais HTML, não API via header
+
+            try {
+                // VERIFIQUE A URL DA SUA API LARAVEL PARA SUBMISSÃO DE REPORTS
+                // Se a rota está em backend/routes/api.php, a URL é /api/report
+                // Se está em backend/routes/web.php sem prefixo, a URL é /report
+                const response = await fetch('http://127.0.0.1:8000/api/report', { // Exemplo: Laravel serve /report
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken // Envia o token CSRF no cabeçalho
+                    }
+                });
+
+                const data = await response.json(); // Analisa a resposta JSON
+
+                if (response.ok) { // Status HTTP 2xx (Sucesso)
+                    protocolDisplay.innerText = data.unique_protocol;
+                    successMessage.classList.remove('hidden');
+                    reportForm.reset(); // Limpa os campos do formulário
+                    reportForm.classList.add('hidden'); // Esconde o formulário
+                } else { // Status HTTP 4xx ou 5xx (Erro)
+                    errorMessage.classList.remove('hidden');
+                    let msg = 'Ocorreu um erro desconhecido. Por favor, tente novamente.';
+
+                    if (response.status === 422 && data.errors) {
+                        // Erros de validação do Laravel
+                        for (const field in data.errors) {
+                            const fieldErrorDiv = document.getElementById(`${field}_error`);
+                            if (fieldErrorDiv) {
+                                fieldErrorDiv.innerText = data.errors[field].join(', ');
+                            }
+                            data.errors[field].forEach(err => {
+                                const li = document.createElement('li');
+                                li.innerText = err;
+                                errorList.appendChild(li);
+                            });
+                        }
+                        msg = 'Falha na validação. Verifique os campos acima.';
+                    } else if (data.message) {
+                        msg = data.message;
+                    }
+
+                    if (errorList.children.length === 0) {
+                        const li = document.createElement('li');
+                        li.innerText = msg;
+                        errorList.appendChild(li);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro de rede ou inesperado:', error);
+                errorMessage.classList.remove('hidden');
+                errorList.innerHTML = '<li>Ocorreu um problema ao enviar sua denúncia. Verifique sua conexão com a internet e tente novamente.</li>';
+            }
+        });
+    }
+
+    if (submitAnotherBtn) { // Verifica se o botão existe
+        submitAnotherBtn.addEventListener('click', () => {
+            successMessage.classList.add('hidden');
+            reportForm.classList.remove('hidden');
+            document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+        });
     }
 });
