@@ -24,3 +24,5 @@ Route::get('/csrf-token', function () {
 });
 
 Route::post('/report', [ReportController::class, 'store'])->name('api.report.store');
+
+Route::get('/reports', [ReportController::class, 'index'])->name('api.reports.index');

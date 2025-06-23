@@ -15,6 +15,15 @@ class ReportController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
+        public function index()
+    {
+        // Busca todos os reports do banco de dados, ordenados pelo mais recente
+        $reports = Report::orderBy('created_at', 'desc')->get();
+
+        // Retorna os reports como JSON
+        return response()->json($reports);
+    }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
