@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Denúncia Enviada com Sucesso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .success-box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .protocol {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-box">
+    <h1>✅ Denúncia enviada com sucesso!</h1>
+    <p>Guarde seu protocolo para acompanhamento:</p>
+    <p class="protocol" id="protocol">...</p>
+    <button onclick="window.location.href='/frontend/'">Voltar para o início</button>
+  </div>
+
+  <script>
+    // Pega protocolo da URL
+    const params = new URLSearchParams(window.location.search);
+    const protocol = params.get('protocol');
+
+    // Exibe no elemento <p id="protocol">
+    if (protocol) {
+      document.getElementById('protocol').textContent = protocol;
+    } else {
+      document.getElementById('protocol').textContent = 'Protocolo não encontrado.';
+    }
+  </script>
+</body>
+</html>

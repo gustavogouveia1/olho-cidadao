@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,9 +16,9 @@ return new class extends Migration
             $table->text('description');
             $table->string('problem_type')->nullable();
             $table->string('location')->nullable();
-            $table->string('status')->default('Pending Review');
+            $table->string('status')->default('pendente'); // tudo em PT-BR para consistência
             $table->timestamp('occurrence_date')->nullable();
-            // $table->string('anexo_url')->nullable();
+            $table->string('anexo_url')->nullable(); // descomentado
             $table->timestamps();
         });
     }
