@@ -274,51 +274,84 @@
           Preencha os campos abaixo para enviar sua denúncia. Sua identidade
           será mantida em sigilo.
         </p>
-        <form id="report-form">
-          <div class="form-group">
-            <label for="report-title">Título da Denúncia</label>
-            <input
-              type="text"
-              id="report-title"
-              name="report-title"
-              placeholder="Ex: Buraco na Rua Principal"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="report-category">Categoria</label>
-            <select id="report-category" name="report-category" required>
-              <option value="">Selecione uma categoria...</option>
-              <option value="infraestrutura">
-                Infraestrutura (ruas, calçadas)
-              </option>
-              <option value="iluminacao">Iluminação Pública</option>
-              <option value="limpeza">Limpeza Urbana (lixo, entulho)</option>
-              <option value="sinalizacao">Sinalização de Trânsito</option>
-              <option value="outros">Outros</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="report-description">Descrição Detalhada</label>
-            <textarea
-              id="report-description"
-              name="report-description"
-              rows="5"
-              placeholder="Descreva o problema com o máximo de detalhes possível, incluindo localização exata."
-              required
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label for="report-file">Anexar Foto (Opcional)</label>
-            <input
-              type="file"
-              id="report-file"
-              name="report-file"
-              accept="image/*"
-            />
-          </div>
-          <button type="submit" class="submit-button">Enviar Denúncia</button>
-        </form>
+<form id="report-form">
+  <div class="form-group">
+    <label for="report-title">Título da Denúncia</label>
+    <input
+      type="text"
+      id="report-title"
+      name="report-title"
+      placeholder="Ex: Buraco na Rua Principal"
+      required
+    />
+  </div>
+
+  <!-- Categoria -->
+  <div class="form-group">
+    <label for="report-category">Categoria</label>
+    <select id="report-category" name="report-category" required>
+      <option value="">Selecione uma categoria...</option>
+      <option value="infraestrutura">Infraestrutura (ruas, calçadas)</option>
+      <option value="iluminacao">Iluminação Pública</option>
+      <option value="limpeza">Limpeza Urbana (lixo, entulho)</option>
+      <option value="sinalizacao">Sinalização de Trânsito</option>
+      <option value="outros">Outros</option>
+    </select>
+  </div>
+
+  <!-- Descrição Detalhada -->
+  <div class="form-group">
+    <label for="report-description">Descrição Detalhada</label>
+    <textarea
+      id="report-description"
+      name="report-description"
+      rows="5"
+      placeholder="Descreva o problema com o máximo de detalhes possível, incluindo localização exata."
+      required
+    ></textarea>
+  </div>
+
+  <!-- Localização -->
+  <div class="form-group">
+    <label for="report-location">Localização</label>
+    <input
+      type="text"
+      id="report-location"
+      name="report-location"
+      placeholder="Informe a localização exata do problema"
+      required
+    />
+  </div>
+
+  <!-- Data do Ocorrido -->
+  <div class="form-group">
+    <label for="report-occurrence-date">Data do Ocorrido</label>
+    <input
+      type="date"
+      id="report-occurrence-date"
+      name="report-occurrence-date"
+      required
+    />
+  </div>
+
+  <!-- Anexar Foto -->
+  <div class="form-group">
+    <label for="report-file">Anexar Foto (Opcional)</label>
+    <input
+      type="file"
+      id="report-file"
+      name="report-file"
+      accept="image/*"
+    />
+  </div>
+
+  <!-- Campo oculto para o Status da Denúncia -->
+  <input type="hidden" name="report-status" value="pendente" />
+
+  <!-- Botão de Envio -->
+  <button type="submit" class="submit-button">Enviar Denúncia</button>
+</form>
+
       </div>
     </div>
 

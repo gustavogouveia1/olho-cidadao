@@ -24,14 +24,16 @@ class ReportController extends Controller
         return response()->json($reports);
     }
 
-    public function store(Request $request)
+public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'problem_type' => ['required', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'attachments' => ['array', 'nullable'],
-            'attachments.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // 5MB por arquivo
+            'report-category' => ['required', 'string', 'max:255'],
+            'report-location' => ['required', 'string', 'max:255'],
+            'report-description' => ['required', 'string'],
+            'report-occurrence-date' => ['required', 'date'],
+            'report-status' => ['nullable', 'string', 'max:255'],
+            'report-file' => ['array', 'nullable'],
+            'report-file.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         do {
@@ -39,9 +41,8 @@ class ReportController extends Controller
         } while (Report::where('unique_protocol', $uniqueProtocol)->exists());
 
         $attachmentUrls = [];
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-
+        if ($request->hasFile('report-file')) {
+            foreach ($request->file('report-file') as $file) {
                 $path = $file->store('reports_attachments', 'public');
                 $attachmentUrls[] = Storage::url($path);
             }
@@ -49,12 +50,14 @@ class ReportController extends Controller
 
         $report = Report::create([
             'unique_protocol' => $uniqueProtocol,
-            'description' => $validatedData['description'],
-            'problem_type' => $validatedData['problem_type'],
-            'location' => $validatedData['location'],
-            'status' => 'Pending Review',
-            'occurrence_date' => now(),
+            'description' => $validatedData['report-description'],
+            'problem_type' => $validatedData['report-category'],
+            'location' => $validatedData['report-location'],
+            'status' => $validatedData['report-status'] ?? 'Pending Review',
+            'occurrence_date' => $validatedData['report-occurrence-date'],
         ]);
+
+        // Se quiser salvar os arquivos no banco, adicione aqui também
 
         return response()->json([
             'message' => 'Report submitted successfully!',
