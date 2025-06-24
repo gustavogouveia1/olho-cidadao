@@ -6,61 +6,63 @@ use Illuminate\Http\Request;
 use App\Models\Report;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
     /**
-     * Store a newly created report in storage (API Endpoint).
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * List all reports.
      */
-        public function index()
+    public function index()
     {
-        // Busca todos os reports do banco de dados, ordenados pelo mais recente
         $reports = Report::orderBy('created_at', 'desc')->get();
-
-        // Retorna os reports como JSON
         return response()->json($reports);
     }
 
-public function store(Request $request)
+    /**
+     * Store a new report.
+     */
+    public function store(Request $request)
     {
+        // (Opcional) Log para debug
+        Log::debug('Request received:', $request->all());
+
+        // ✅ Validação correta para campos individuais:
         $validatedData = $request->validate([
+            'report-title' => ['required', 'string', 'max:255'],
             'report-category' => ['required', 'string', 'max:255'],
             'report-location' => ['required', 'string', 'max:255'],
             'report-description' => ['required', 'string'],
             'report-occurrence-date' => ['required', 'date'],
             'report-status' => ['nullable', 'string', 'max:255'],
-            'report-file' => ['array', 'nullable'],
-            'report-file.*' => ['file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'report-file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
+        // ✅ Gera protocolo único
         do {
             $uniqueProtocol = 'OC-' . Str::upper(Str::random(10));
         } while (Report::where('unique_protocol', $uniqueProtocol)->exists());
 
-        $attachmentUrls = [];
+        // ✅ Upload de 1 arquivo, se existir
+        $attachmentUrl = null;
         if ($request->hasFile('report-file')) {
-            foreach ($request->file('report-file') as $file) {
-                $path = $file->store('reports_attachments', 'public');
-                $attachmentUrls[] = Storage::url($path);
-            }
+            $path = $request->file('report-file')->store('reports_attachments', 'public');
+            $attachmentUrl = Storage::url($path);
         }
 
+        // ✅ Cria o Report com todos os campos preenchidos
         $report = Report::create([
             'unique_protocol' => $uniqueProtocol,
             'description' => $validatedData['report-description'],
             'problem_type' => $validatedData['report-category'],
             'location' => $validatedData['report-location'],
-            'status' => $validatedData['report-status'] ?? 'Pending Review',
+            'status' => $validatedData['report-status'] ?? 'pendente',
             'occurrence_date' => $validatedData['report-occurrence-date'],
+            'anexo_url' => $attachmentUrl,
         ]);
 
-        // Se quiser salvar os arquivos no banco, adicione aqui também
-
         return response()->json([
-            'message' => 'Report submitted successfully!',
+            'message' => 'Denúncia registrada com sucesso!',
             'unique_protocol' => $uniqueProtocol,
             'report_id' => $report->id,
         ], 201);

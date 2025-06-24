@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMsg = document.getElementById('error-message') || createFeedback('error-message');
     const protocolDisplay = document.getElementById('protocol-display') || createProtocol();
     const errorList = document.getElementById('error-list') || createErrorList();
-    const submitAnotherBtn = document.getElementById('submit-another-btn') || createAnotherBtn();
+    // const submitAnotherBtn = document.getElementById('submit-another-btn') || createAnotherBtn();
 
     function createFeedback(id) {
       const el = document.createElement('div');
@@ -146,18 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return el;
     }
 
-    function createAnotherBtn() {
-      const btn = document.createElement('button');
-      btn.id = 'submit-another-btn';
-      btn.textContent = 'Enviar outra denúncia';
-      btn.classList.add('submit-button');
-      protocolDisplay.insertAdjacentElement('afterend', btn);
-      btn.addEventListener('click', () => {
-        successMsg.classList.add('hidden');
-        form.classList.remove('hidden');
-      });
-      return btn;
-    }
+    // function createAnotherBtn() {
+    //   const btn = document.createElement('button');
+    //   btn.id = 'submit-another-btn';
+    //   btn.textContent = 'Enviar outra denúncia';
+    //   btn.classList.add('submit-button');
+    //   protocolDisplay.insertAdjacentElement('afterend', btn);
+    //   btn.addEventListener('click', () => {
+    //     successMsg.classList.add('hidden');
+    //     form.classList.remove('hidden');
+    //   });
+    //   return btn;
+    // }
 
     function openModal() {
       modal.classList.add('show');
@@ -175,48 +175,41 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     form.addEventListener('submit', async e => {
-      e.preventDefault();
-      successMsg.classList.add('hidden');
-      errorMsg.classList.add('hidden');
-      errorList.innerHTML = '';
+  e.preventDefault();
 
-      if (!csrfToken) { alert('Token CSRF ausente. Recarregue.'); return; }
+  // Cria FormData com os campos do form
+  const data = new FormData(form);
 
-      const data = new FormData(form);
-
-      try {
-        const res = await fetch('http://127.0.0.1:8000/api/report', {
-          method: 'POST',
-          headers: { 'X-CSRF-TOKEN': csrfToken },
-          body: data
-        });
-
-        const result = await res.json();
-        if (res.ok) {
-          protocolDisplay.innerText = 'Protocolo: ' + result.unique_protocol;
-          successMsg.textContent = 'Denúncia enviada com sucesso!';
-          successMsg.classList.remove('hidden');
-          form.reset();
-          form.classList.add('hidden');
-        } else {
-          errorMsg.textContent = 'Erro ao enviar. Veja abaixo:';
-          errorMsg.classList.remove('hidden');
-          if (result.errors) {
-            Object.values(result.errors).flat().forEach(msg => {
-              const li = document.createElement('li');
-              li.textContent = msg;
-              errorList.appendChild(li);
-            });
-          } else {
-            const li = document.createElement('li');
-            li.textContent = result.message || 'Erro desconhecido.';
-            errorList.appendChild(li);
-          }
-        }
-      } catch {
-        errorMsg.textContent = 'Erro de rede. Tente novamente.';
-        errorMsg.classList.remove('hidden');
-      }
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/report', {
+      method: 'POST',
+      body: data
     });
+
+    const result = await res.json();
+    if (res.ok) {
+      protocolDisplay.innerText = 'Protocolo: ' + result.unique_protocol;
+      successMsg.textContent = 'Denúncia enviada com sucesso!';
+      successMsg.classList.remove('hidden');
+      form.reset();
+      form.classList.add('hidden');
+    } else {
+      // Mostra erros de validação se houver
+      errorMsg.textContent = 'Erro ao enviar:';
+      errorMsg.classList.remove('hidden');
+      errorList.innerHTML = '';
+      if (result.errors) {
+        Object.values(result.errors).flat().forEach(msg => {
+          const li = document.createElement('li');
+          li.textContent = msg;
+          errorList.appendChild(li);
+        });
+      }
+    }
+  } catch {
+    errorMsg.textContent = 'Erro de rede.';
+    errorMsg.classList.remove('hidden');
+  }
+});
   }
 });
