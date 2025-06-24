@@ -20,6 +20,17 @@ body {
   min-height: 100vh;
 }
 
+.protocol-box {
+  margin: 1em 0;
+  padding: 1em;
+  background: #eee;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  word-break: break-all;
+}
+
+
 /* Adicionado para quando o modal estiver aberto */
 body.modal-open {
   overflow: hidden;
