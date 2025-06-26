@@ -13,63 +13,125 @@ document.querySelectorAll('header nav a[href^="#"]').forEach(link => {
 // ===============================================
 // 2) CARROSSEL DE CARDS
 // ===============================================
-const carousel = document.querySelector('.carousel-wrapper');
-if (carousel) {
-  const grid = carousel.querySelector('.card-grid');
-  const originalCards = [...grid.children];
-  originalCards.forEach(card => {
-    const clone = card.cloneNode(true);
-    clone.setAttribute('aria-hidden', true);
-    grid.appendChild(clone);
-  });
+ const cardCarousel = document.querySelector('.carousel-wrapper');
+    if (cardCarousel) {
+        const cardGrid = cardCarousel.querySelector('.card-grid');
+        const originalCards = Array.from(cardGrid.children);
 
-  const originalWidth = carousel.scrollWidth / 2;
-  let autoScroll = setInterval(scroll, 25);
+        // LÓGICA DE DUPLICAÇÃO DOS CARDS PARA O LOOP INFINITO
+        if (originalCards.length > 0) {
+            originalCards.forEach(card => {
+                const clone = card.cloneNode(true);
+                clone.setAttribute('aria-hidden', true);
+                cardGrid.appendChild(clone);
+            });
+        }
+        
+        const originalWidth = cardCarousel.scrollWidth / 2;
+        let autoScrollInterval;
 
-  function scroll() {
-    carousel.scrollLeft += 2.5;
-    if (carousel.scrollLeft >= originalWidth) {
-      carousel.scrollLeft -= originalWidth;
+        // LÓGICA DE ROLAGEM AUTOMÁTICA (REATIVADA)
+        function startAutoScroll() {
+            clearInterval(autoScrollInterval); // Limpa qualquer intervalo anterior
+            autoScrollInterval = setInterval(() => {
+                cardCarousel.scrollLeft += 2.5; // Velocidade da rolagem automática
+                if (cardCarousel.scrollLeft >= originalWidth) {
+                    cardCarousel.scrollLeft -= originalWidth;
+                }
+            }, 25); // Intervalo em milissegundos
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+
+        startAutoScroll(); // Inicia a rolagem automática
+        cardCarousel.addEventListener('mouseenter', stopAutoScroll);
+        cardCarousel.addEventListener('mouseleave', () => {
+            if (!isDragging) {
+                startAutoScroll();
+            }
+        });
+        
+        // LÓGICA PARA ARRASTAR COM O MOUSE E INÉRCIA
+        let isDragging = false;
+        let startX;
+        let scrollLeft;
+        let hasDragged = false;
+        let velocityX = 0;
+        let momentumId;
+
+        cardCarousel.addEventListener('dragstart', (e) => e.preventDefault());
+
+        cardCarousel.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            isDragging = true;
+            hasDragged = false;
+            cardCarousel.classList.add('active');
+            
+            startX = e.pageX - cardCarousel.offsetLeft;
+            scrollLeft = cardCarousel.scrollLeft;
+            
+            stopAutoScroll(); // Pausa a rolagem automática
+            cancelAnimationFrame(momentumId); // Para qualquer animação de inércia anterior
+            velocityX = 0; // Zera a velocidade ao iniciar novo arraste
+        });
+
+        cardCarousel.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const x = e.pageX - cardCarousel.offsetLeft;
+            const walk = x - startX;
+            if (Math.abs(walk) > 5) {
+                hasDragged = true;
+            }
+
+            const prevScrollLeft = cardCarousel.scrollLeft;
+            cardCarousel.scrollLeft = scrollLeft - walk;
+            // Calcula a velocidade do movimento em tempo real para usar na inércia
+            velocityX = cardCarousel.scrollLeft - prevScrollLeft;
+        });
+
+        const endDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            cardCarousel.classList.remove('active');
+
+            // --- LÓGICA DE INÉRCIA (DESACELERAÇÃO SUAVE) ---
+            function momentumLoop() {
+                cardCarousel.scrollLeft += velocityX; // Aplica o movimento
+                velocityX *= 0.95; // Aplica atrito (fricção) para desacelerar
+
+                // Lógica de loop infinito durante a inércia
+                if (cardCarousel.scrollLeft >= originalWidth) {
+                    cardCarousel.scrollLeft -= originalWidth;
+                } else if (cardCarousel.scrollLeft <= 0) {
+                    cardCarousel.scrollLeft += originalWidth;
+                }
+                
+                // Continua a animação se ainda houver velocidade
+                if (Math.abs(velocityX) > 0.5) {
+                    momentumId = requestAnimationFrame(momentumLoop);
+                } else {
+                    // Quando parar, retoma o auto-scroll se o mouse não estiver em cima
+                    if (!cardCarousel.matches(':hover')) {
+                        startAutoScroll();
+                    }
+                }
+            }
+            // Inicia a animação de inércia ao soltar o mouse
+            momentumId = requestAnimationFrame(momentumLoop);
+        };
+        
+        window.addEventListener('mouseup', endDrag);
+
+        cardGrid.addEventListener('click', (e) => {
+            if (hasDragged) {
+                e.preventDefault();
+            }
+        });
     }
-  }
-
-  let dragging = false, startX, scrollLeft, velocity = 0, rafId;
-
-  carousel.addEventListener('mousedown', e => {
-    dragging = true;
-    startX = e.pageX - carousel.offsetLeft;
-    scrollLeft = carousel.scrollLeft;
-    clearInterval(autoScroll);
-    cancelAnimationFrame(rafId);
-  });
-
-  carousel.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const x = e.pageX - carousel.offsetLeft;
-    const walk = x - startX;
-    const prev = carousel.scrollLeft;
-    carousel.scrollLeft = scrollLeft - walk;
-    velocity = carousel.scrollLeft - prev;
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (!dragging) return;
-    dragging = false;
-    momentum();
-  });
-
-  carousel.addEventListener('mouseenter', () => clearInterval(autoScroll));
-  carousel.addEventListener('mouseleave', () => { if (!dragging) autoScroll = setInterval(scroll, 25); });
-
-  function momentum() {
-    carousel.scrollLeft += velocity;
-    velocity *= 0.95;
-    if (carousel.scrollLeft >= originalWidth) carousel.scrollLeft -= originalWidth;
-    if (carousel.scrollLeft <= 0) carousel.scrollLeft += originalWidth;
-    if (Math.abs(velocity) > 0.5) rafId = requestAnimationFrame(momentum);
-    else autoScroll = setInterval(scroll, 25);
-  }
-}
 
 // ===============================================
 // 3) CARROSSEL SOBRE NÓS

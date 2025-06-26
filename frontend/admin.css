@@ -1,0 +1,372 @@
+/* Importa a fonte para os ícones e a fonte do texto */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Reset e Configurações Globais */
+:root {
+    --primary-blue: #4a5a9c;
+    --success-green: #28a745; /* Verde para 'Approve' */
+    --danger-red: #dc3545;   /* Vermelho para 'Reject' */
+    --light-gray-bg: #f8f9fa;
+    --white: #ffffff;
+    --border-color: #e9ecef;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --notification-red: #d93434;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--light-gray-bg);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* Container Principal */
+.admin-container {
+    width: 100%;
+    max-width: 960px;
+    background-color: var(--white);
+    border-radius: 16px;
+    padding: 24px 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Cabeçalho Superior */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #3b4a8c;
+}
+
+.back-button .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    color: var(--text-secondary);
+}
+
+.header-icons .material-symbols-outlined {
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.header-icons .material-symbols-outlined:hover {
+    color: var(--text-primary);
+}
+
+.header-icons a {
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.has-notification::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--notification-red);
+    border-radius: 50%;
+    border: 1px solid var(--white);
+}
+
+/* Conteúdo Principal */
+.main-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.reports-section {
+    background-color: var(--white);
+}
+
+.reports-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reports-toolbar h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.analyze-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Lista de Relatórios */
+.report-list {
+    list-style: none;
+}
+
+.report-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.report-item:last-child {
+    border-bottom: none;
+}
+
+.report-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.report-icon {
+    color: var(--text-secondary);
+    font-size: 28px;
+}
+
+.report-details p {
+    margin: 0;
+}
+
+.report-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.report-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Ações do Relatório (BOTÕES) */
+.report-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espaçamento entre os botões */
+}
+
+/* Estilo Base dos Botões */
+.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: var(--white);
+}
+
+.btn:hover {
+    transform: translateY(-2px); /* Efeito de levantar ao passar o mouse */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ESTILOS ESPECÍFICOS DOS BOTÕES POR COR */
+.btn-approve {
+    background-color: var(--success-green);
+}
+.btn-approve:hover {
+    background-color: #218838;
+}
+
+.btn-analyze {
+    background-color: var(--primary-blue);
+}
+.btn-analyze:hover {
+    background-color: #3b4a8c;
+}
+
+.btn-reject {
+    background-color: var(--danger-red);
+}
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    .admin-container {
+        padding: 16px;
+    }
+    .main-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .report-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .report-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .btn {
+        width: 32%;
+        text-align: center;
+        padding: 10px 5px;
+    }
+}
+
+
+
+/* --- ESTILOS PARA O STATUS DO RELATÓRIO --- */
+
+.report-status {
+    margin: 0 20px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: capitalize;
+}
+
+.status-pendente {
+    background-color: #f0ad4e; /* Laranja */
+}
+
+.status-resolvido {
+    background-color: var(--success-green); /* Verde */
+}
+
+.status-em-andamento { /* Exemplo para futuros status */
+    background-color: var(--primary-blue); /* Azul */
+}
+
+/* Ajuste no .report-item para acomodar o status */
+.report-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto; /* Info | Status | Ações */
+    gap: 16px;
+    align-items: center;
+    padding: 16px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* --- ESTILOS PARA O MODAL DE DETALHES --- */
+
+.modal {
+    display: none; /* Começa oculto */
+    position: fixed; /* Fica fixo na tela */
+    z-index: 1000; /* Fica na frente de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo preto semi-transparente */
+    
+    /* Para centralizar o conteúdo */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    padding: 25px 30px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.modal-content p strong {
+    color: #111;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #000;
+}
+
+/* Animação simples para o modal aparecer */
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

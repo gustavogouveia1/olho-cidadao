@@ -59,7 +59,7 @@ form.addEventListener('submit', (e) => {
       if (result.unique_protocol) {
   localStorage.setItem('last_protocol', result.unique_protocol);
 
- window.location.href = `${window.location.origin}/frontend/success.html?protocol=${encodeURIComponent(result.unique_protocol)}`;
+ window.location.href = `${window.location.origin}/olho-cidadao/frontend/success.html?protocol=${encodeURIComponent(result.unique_protocol)}`;
 }
 
       alert('✅ Denúncia enviada com sucesso!');

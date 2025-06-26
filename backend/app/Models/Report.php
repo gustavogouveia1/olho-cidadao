@@ -17,4 +17,11 @@ class Report extends Model
         'status',
         'unique_protocol',
     ];
+
+    protected $casts = [
+    'occurrence_date' => 'date',
+    'created_at' => 'datetime',
+    'updated_at' => 'datetime',
+];
+
 }
