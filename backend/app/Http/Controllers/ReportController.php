@@ -53,6 +53,7 @@ class ReportController extends Controller
         // ✅ Cria o Report com todos os campos preenchidos
         $report = Report::create([
             'unique_protocol' => $uniqueProtocol,
+            'title' => $validatedData['report-title'],
             'description' => $validatedData['report-description'],
             'problem_type' => $validatedData['report-category'],
             'location' => $validatedData['report-location'],
@@ -67,4 +68,25 @@ class ReportController extends Controller
             'report_id' => $report->id,
         ], 201);
     }
+
+    public function show($protocol)
+{
+    $report = Report::where('unique_protocol', $protocol)->first();
+
+    if (!$report) {
+        return response()->json(['error' => 'Protocolo não encontrado.'], 404);
+    }
+
+    return response()->json([
+        'status' => $report->status,
+        'unique_protocol' => $report->unique_protocol,
+        'title' => $report->problem_type, // ou use o campo certo
+        'description' => $report->description,
+        'location' => $report->location,
+        'occurrence_date' => $report->occurrence_date->toDateString(),
+        'created_at' => $report->created_at->toDateTimeString(),
+        'attachment_url' => $report->anexo_url,
+    ]);
+}
+
 }
