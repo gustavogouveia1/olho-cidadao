@@ -15,17 +15,21 @@ return [
     |
     */
 
-    'paths' => [
+    /*'paths' => [
         'api/*',
         'sanctum/csrf-cookie',
         '/login',
         '/logout',
         '/register'
-    ],
+    ],*/
+
+    'paths' => ['*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost/olho-cidadao/frontend')),
+    //'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost')),
+
+    'allowed_origins' => ['http://localhost'],
 
     'allowed_origins_patterns' => [],
 

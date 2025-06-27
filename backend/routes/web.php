@@ -22,4 +22,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+Route::middleware('auth')->get('/dashboard', function () {
+    return response()->json([
+        'message' => 'Usuário autenticado, pode acessar o dashboard',
+    ]);
+});
+
+Route::get('/teste-auth', function () {
+    return auth()->check()
+        ? response()->json(['auth' => true, 'user' => auth()->user()])
+        : response()->json(['auth' => false], 401);
+});
+
+//require __DIR__.'/auth.php';
