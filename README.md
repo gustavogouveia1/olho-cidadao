@@ -44,6 +44,6 @@ php artisan serve
 Acesse o frontend
 Abra o arquivo index.html dentro da pasta frontend no navegador, ou sirva com um servidor local (como o Live Server do VS Code).
 
-🤝 Contribuição
+### 🤝 Contribuição
 Este projeto é desenvolvido por Gustavo Gouveia e Marco Fonseca como parte de um trabalho acadêmico, mas está em desenvolvimento ativo e aberto a colaborações futuras.
 
